@@ -109,3 +109,56 @@ Nil means don't handle."
 
 
 (cl-destructuring-bind )
+
+
+
+
+
+
+(benj-rolsyn-tools/jump-line
+
+ )
+
+
+(defun test()
+  (interactive)
+  (re-search-forward "Offset=\\(\"\\[[0-9]+-\\)" nil))
+
+
+
+(defun jump ()
+  (interactive)
+  (and (re-search-forward "Line=\"\\([0-9]+\\)\"" (point-at-eol) t)
+       (find-file (match-string-no-properties 1))
+       (goto-char (point-min))
+       (forward-line (string-to-number (match-string-no-properties 1)))
+
+       )
+
+  )
+
+
+
+;;
+
+
+
+(assoc-default 'jj '((jjl . "ff")))
+
+
+(defvar team/jump-matchers '())
+
+
+(defun team/add-jump-matcher (regex &rest groups)
+  (add-to-list
+   'team/jump-matchers
+   `(,regex
+
+
+     ))
+  )
+
+
+
+(macroexpand `(team/add-jump-matcher "ff" '(ff . 1) '(fa . 2)))
+(-clone)

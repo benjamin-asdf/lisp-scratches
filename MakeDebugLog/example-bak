@@ -1,0 +1,11 @@
+    public static void Decode(BitArray orderMask, out int p1Pos,out int p2Pos,out int p3Pos) {
+        if (!(orderMask.Length >= MASK_SIZE)) {
+            Debug.Log($"Mask Length invalid: {orderMask.Length}"); // disable BEST033
+        }
+
+        p1Pos = GetPos(orderMask,0);
+        p2Pos = GetPos(orderMask,2);
+        p3Pos = GetPos(orderMask,4);
+
+        Invariant(p1Pos,p2Pos,p3Pos);
+    }

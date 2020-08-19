@@ -1,30 +1,33 @@
 (defmacro team/setup-dev-scratch ()
 
-  (let ((name (file-name-base (buffer-file-name))))
-    ;; todo
-    )
-
-
   (defmacro in-here (&rest body)
     (declare (debug body))
     `(let ((default-directory ,(file-name-directory buffer-file-name)))
        ,@body))
 
-  (in-here (write-region "" nil "example-bak"))
+  (defmacro with-sample-file (&rest body)
+    `(team/with-file
+      "example"
+      ,@body))
 
-  (defun diff-with-back ()
-    (interactive)
-    (in-here
-     (ediff-files "example-bak" "example.cs")))
 
-  (defun restore-backup ()
-    (interactive)
-    (in-here
-     (copy-file "example-bak" "example.cs" t)))
+  `(prog
+    (defun diff-with-back ()
+      (interactive)
+      (in-here
+       (ediff-files "example-bak" "example")))
 
-  (spacemacs/set-leader-keys "otr" 'restore-backup)
-  (spacemacs/set-leader-keys "otd" 'diff-with-back)
-  )
+    (defun restore-backup ()
+      (interactive)
+      (in-here
+       (copy-file "example-bak" "example" t)))
+
+    (spacemacs/set-leader-keys "otr" 'restore-backup)
+    (spacemacs/set-leader-keys "otd" 'diff-with-back)
+
+    (defun ii () (insert "|")))
+
+  (in-here (write-region "" nil "example-bak")))
 
 
 (defconst team/lisp-scratches-dir "~/repos/lisp/scratches/")
@@ -47,7 +50,7 @@
   (read-only-mode)
   (split-window-below-and-focus)
   ;; this should not be .cs I want to customize that
-  (find-file "example.cs")
+  (find-file "example")
   (save-buffer)
   (read-only-mode)
 

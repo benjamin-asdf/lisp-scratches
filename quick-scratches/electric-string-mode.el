@@ -93,39 +93,38 @@
   (if benj-csharp-electric-mode
       (progn
 	      (add-hook 'post-self-insert-hook
-                  #'benj-csharp-electric-mode-post-self-insert-function
-                  100
-        ))
+                  #'benj-csharp-electric-mode-post-self-insert-function))
     (remove-hook 'post-self-insert-hook
-              #'benj-csharp-electric-mode-post-self-insert-function
-              )))
+              #'benj-csharp-electric-mode-post-self-insert-function)))
 
 (defun benj-csharp-electric-mode-post-self-insert-function ()
   (when benj-csharp-electric-mode
-
     (when
         (and
-         ;; (looking-at "}.+?\\w+.+$")
          (looking-back "if\s*\(.*\)\s*{")
-         ;; (looking-back "if\s?\(.+?\) ")
-         )
-      (message "yes")
-      )
+         (looking-at "[[:blank:]]?+[^\s;]+;"))
+      (let ((indent (current-indentation)))
+        (kill-line)
+        (open-line 1)
+        (forward-line 1)
+        (yank)
+        (open-line 1)
+        (forward-line 1)
+        (indent-to-column indent)
+        (insert "}")
+        ))
 
-    (save-excursion
-      ;; make marker
-      (goto-char (point-at-bol))
-      ;; TODO log methods lookup
-      ;; (when (looking-at "^\\(.*\\)Console.WriteLine();\\(\$?\".*\"\\);$")
-      ;;   (replace-match (format "%sConsole.WriteLine(%s);" (match-string 1) (match-string 2)))))
+    ;; (save-excursion
+    ;;   ;; make marker
+    ;;   (goto-char (point-at-bol))
+    ;;   ;; TODO log methods lookup
+    ;;   ;; (when (looking-at "^\\(.*\\)Console.WriteLine();\\(\$?\".*\"\\);$")
+    ;;   ;;   (replace-match (format "%sConsole.WriteLine(%s);" (match-string 1) (match-string 2)))))
 
+    ;;   ;;
+    ;;   ;; (when ))
 
-
-      ;;
-      ;; (when )
-
-
-    )))
+  ))
 
 (defface
   idlegame-mode-entitas-matchers-face
@@ -185,7 +184,3 @@ Matcher.AllOf<SpecialDealsManagerC>()
 
 
 (defun benj-csharp-electric-mode-post-self-insert-function ())
-(string-match "if\s*\(.*\)\s*{" "if (hello) {" )
-(benj-csharp-electric-mode 1)
-(string-match "\s*" "f")
-(string-match "}" "}" )

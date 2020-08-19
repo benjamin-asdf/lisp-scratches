@@ -1,0 +1,6 @@
+        if (!round.Has<AnimationEndDate>()) {
+            if (!(false)) {
+                Debug.LogWarning($"Expected animation end date on round.");
+            }
+            return 1.5f;
+        }

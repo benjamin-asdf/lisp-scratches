@@ -1,4 +1,4 @@
-(team/setup-dev-scratch)
+;;(team/setup-dev-scratch)
 
 (defun wrap-assert ()
   (interactive)
@@ -6,41 +6,41 @@
   (let ((indentation (current-indentation))
         (success
          (save-excursion
-           (unless
-               (re-search-forward
-                "^[[:blank:]]*\\(?:UnityEngine\.\\)?Debug\.Assert\(\\([^\"]+\\),\\([^;]+\\)\);"                (save-excursion
-                  (forward-line 5)
-                  (point-at-eol))
-                t)
-             ))
-         ))
-    (let ((kill-whole-line t)
-          (cond-match
-           (format
-            "!(%s)"
-            (match-string-no-properties 1)))
-          (body-match
-           (format
-            "Debug.Log(%s);"
-            (string-trim
-             (match-string-no-properties 2)))))
-      (kill-line)
-      (yas-minor-mode 1)
-      (yas-expand-snippet
-       (yas-lookup-snippet
-        "if-template"
-        'cc-mode)
-       nil
-       nil
-       `((condition ,cond-match)
-         (body ,body-match))))
-    (let ((region (inserted-region)))
-      (indent-region
-       (cadr region)
-       (car region)
-       indentation))
-    (forward-line -2)
-    (indent-line-to (+ 4 indentation))))
+           (re-search-forward
+            "^[[:blank:]]*\\(?:UnityEngine\.\\)?Debug\.Assert\(\\([^\"]+\\),\\([^;]+\\)\);"
+            (save-excursion
+              (forward-line 5)
+              (point-at-eol))
+            t))))
+    (if (not success)
+        (insert "//--> regex fail")
+      (let ((kill-whole-line t)
+            (cond-match
+             (format
+              "!(%s)"
+              (match-string-no-properties 1)))
+            (body-match
+             (format
+              "Debug.Log(%s);"
+              (string-trim
+               (match-string-no-properties 2)))))
+        (kill-line)
+        (yas-minor-mode 1)
+        (yas-expand-snippet
+         (yas-lookup-snippet
+          "if-template"
+          'cc-mode)
+         nil
+         nil
+         `((condition ,cond-match)
+           (body ,body-match))))
+      (let ((region (inserted-region)))
+        (indent-region
+         (cadr region)
+         (car region)
+         indentation))
+      (forward-line -2)
+      (indent-line-to (+ 4 indentation)))))
 
 (team/with-file
     "example.cs"
@@ -65,7 +65,7 @@
 
 
 
-(setq example-in '("/home/benj/repos/lisp/debug-assert/example.cs" (2 6)))
+;; (setq example-in '("/home/benj/repos/lisp/debug-assert/example.cs" (2 6)))
 
 
 (defun rewrite-debug-assert (file lines &rest _)
@@ -94,23 +94,19 @@ LINES should be a list of numbers."
 
 
 
+
+;; (benj-roslyn/with-collected-lines
+;;  ;; "/tmp/example-in"
+;;  "/tmp/IdleGame-10:26:56.analyzer-log"
+
+;;  #'(lambda (file lines &rest _)
+;;      (message "File %s with %s" file (length lines))
+;;        )
+;;  )
+
+
+
 (benj-roslyn/with-collected-lines
-  ;; "/tmp/example-in"
-
- "/tmp/IdleGame-10:26:56.analyzer-log"
-
+  "/tmp/in-file"
  #'rewrite-debug-assert
 )
-
-
-
-
-
-(benj-roslyn/with-collected-lines
- ;; "/tmp/example-in"
- "/tmp/IdleGame-10:26:56.analyzer-log"
-
- #'(lambda (file lines &rest _)
-     (message "File %s with %s" file (length lines))
-       )
- )
