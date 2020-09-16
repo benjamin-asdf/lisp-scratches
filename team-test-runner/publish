@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# sbcl --no-userinit \
+#      --load team-utils.lisp \
+#      --load team-test-runner.lisp \
+#      --eval "(sb-ext:save-lisp-and-die \"team-test-runner\" :toplevel 'main :executable t)"
+
+rm out
+
+sbcl --no-userinit \
+     --load main.lisp \
+     --eval "(sb-ext:save-lisp-and-die \"out\" :toplevel 'main :executable t)"

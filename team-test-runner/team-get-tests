@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# use rg to serch for test methods in FILE
+[ $# -eq 1 ] || printf "usage: team-get-tests <filename>\n" && exit 1
+
+rg -UNo "\[Test\](?s:.)+?(\\w+)\(\)" -r='$1' "$1"

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+
+
+tests=$(rg -UNo "\[Test\](?s:.)+?(\\w+)\(\)" -r='$1' "$1")
+
+bunel "IdleGame" "refresh-and" "run-tests" "$tests"
