@@ -46,3 +46,40 @@
       #'(lambda ()
           (print "dog behaviour")))
 (funcall (get 'dog 'behaviour))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(defvar x 10)
+(defvar y 20)
+
+(defun foo ()
+  (+ x y))
+
+(defun bar  (x y)
+  (+ (foo) x y))
+
+(foo)
+(bar 2 3)
