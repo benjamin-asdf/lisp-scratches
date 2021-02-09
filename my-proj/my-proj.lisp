@@ -2,12 +2,6 @@
 
 (in-package #:my-proj)
 
-
-(with-gpu-array-as-c-array )
-
-(with-gpu-array-as-c-array (foo garr)
-  (aref-c foo 1))
-
 ;;  gl data
 ;;uffers, -> handle them with gpu arrs
 ;; textures -> data structure holding images, another flavor of gpu arr
@@ -17,7 +11,69 @@
 
 ;;  -> pipeline -> fbo
 
+(defvar *gpu-verts-arr* nil)
+(defvar *gpu-index-arr* nil)
+(defvar *vert-stream* nil)
+(defvar *viewport* nil)
+(defparameter *running* nil)
 
+(defun-g draw-verts-vert-stage ((vert :vec2))
+  (v! vert 0 1))
+
+(defun-g draw-verts-frag-stage ()
+  (v! 0 1 0.5 0))
+
+(defpipeline-g draw-verts-pipeline ()
+  (draw-verts-vert-stage :vec2)
+  (draw-verts-frag-stage))
+
+(defun draw ()
+  (step-host)
+  (update-repl-link)
+  (with-viewport *viewport*
+    (clear)
+    (map-g #'draw-verts-pipeline *vert-stream*)
+    (swap)))
+
+(defun init ()
+  (when *gpu-verts-arr*
+    (free *gpu-verts-arr*))
+
+  (when *gpu-index-arr*
+    (free *gpu-index-arr*))
+
+  (setf *viewport*
+        (make-viewport '(400 400)))
+
+  ;; (when *vert-stream* ||#
+  ;;   (free *vert-stream* )) ||#
+
+  (setf *gpu-verts-arr*
+        (make-gpu-array
+         (list (v! -0.5 0.5)
+               (v! -0.5 -0.5)
+               (v! 0.5 -0.5)
+               (v! 0.5 0.5))
+         :element-type :vec2))
+
+  (setf *gpu-index-arr*
+        (make-gpu-array
+         (list 0 1 2 0 2 3)
+         :element-type :uint))
+
+  (setf *vert-stream*
+        (make-buffer-stream *gpu-verts-arr*
+                            :index-array *gpu-index-arr*)))
+
+
+(defun run-loop ()
+  (setf *running* t)
+  (loop :while (and *running* (not (shutting-down-p))) :do
+    (continuable (draw))))
+(defun stop-loop ()
+  (setf *running* nil))
+
+;; save model files, lib like cons pack, fast dot or sth
 
 ;; same gl buffer
 ;; (make-gpu-arrays ) ||#
