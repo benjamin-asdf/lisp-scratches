@@ -15,46 +15,70 @@
 (defvar *gpu-index-arr* nil)
 (defvar *vert-stream* nil)
 (defvar *viewport* nil)
+(defvar *leaf-tex1* nil)
+(defvar *leaf-sampler* nil)
 (defparameter *running* nil)
 
-(defun-g draw-verts-vert-stage ((vert :vec2))
-  (v! vert 0 1))
+(defstruct-g our-vert
+  (pos :vec2)
+  (uv :vec2)) ;common name for tex coords|#h
 
-(defun-g draw-verts-frag-stage ()
-  (v! 0 1 0.5 0))
+(defun-g draw-verts-vert-stage ((vert our-vert) &uniform (offset :vec2))
+  (values
+   (v! (+ (our-vert-pos vert) offset) 0 1)
+   (our-vert-uv vert)))
+
+(defun-g draw-verts-frag-stage ((uv :vec2)  &uniform (sam :sampler-2d))
+  ;; (v! 1 1 1 0) ||#
+  (texture sam uv))
 
 (defpipeline-g draw-verts-pipeline ()
-  (draw-verts-vert-stage :vec2)
-  (draw-verts-frag-stage))
+  (draw-verts-vert-stage our-vert)
+  (draw-verts-frag-stage :vec2))
 
 (defun draw ()
   (step-host)
   (update-repl-link)
   (with-viewport *viewport*
     (clear)
-    (map-g #'draw-verts-pipeline *vert-stream*)
+    (map-g #'draw-verts-pipeline *vert-stream*
+           :offset (v!
+                    0 0
+                    ;; (sin (get-universal-time)) ||#
+                    ;; (sin (get-universal-time)) ||#
+                    )
+           :sam *leaf-sampler*)
     (swap)))
 
 (defun init ()
   (when *gpu-verts-arr*
     (free *gpu-verts-arr*))
-
   (when *gpu-index-arr*
     (free *gpu-index-arr*))
+  (when *leaf-tex1*
+    (free *leaf-tex1*))
 
   (setf *viewport*
         (make-viewport '(400 400)))
 
+
   ;; (when *vert-stream* ||#
   ;;   (free *vert-stream* )) ||#
 
+  (setf *leaf-tex1*
+        (dirt:load-image-to-texture
+         "assets/kenney-foliage/png/flat/sprite_0021.png"))
+
+  (setf *leaf-sampler*
+        (sample *leaf-tex1*))
+
   (setf *gpu-verts-arr*
         (make-gpu-array
-         (list (v! -0.5 0.5)
-               (v! -0.5 -0.5)
-               (v! 0.5 -0.5)
-               (v! 0.5 0.5))
-         :element-type :vec2))
+         (list (list (v! -0.5 0.5) (v! 0 1))
+               (list (v! -0.5 -0.5) (v! 0 0))
+               (list (v! 0.5 -0.5) (v! 1 0))
+               (list (v! 0.5 0.5) (v! 1 1)))
+         :element-type 'our-vert))
 
   (setf *gpu-index-arr*
         (make-gpu-array
@@ -79,54 +103,7 @@
 ;; (make-gpu-arrays ) ||#
 
 
-
-;; (defstruct-g pos-col
-;;   (position :vec3 :accessor pos)
-;;   (color :vec4 :accessor col))
-
-;; (defun-g tri-vert ((vert pos-col))
-;;   (values (v! (pos vert) 1.0)
-;;           (col vert)))
-
-;; (defun-g tri-frag ((color :vec4))
-;;   color)
-
-;; (defpipeline-g prog-1 ()
-;;   (tri-vert pos-col)
-;;   (tri-frag :vec4))
-
-
-;; (let ((arr)
-;;       (stream))
-;;   (defun step-game ()
 ;;     (when
 ;;         (cepl.skitter.sdl2:key-down-p
 ;;          14)
 
-;;       (unless arr
-;;         (setf
-;;          arr
-;;          (make-gpu-array (list (list (v!  0.5 -0.36 0) (v! 0 1 0 1))
-;;                                (list (v!    0   0.5 0) (v! 1 0 0 1))
-;;                                (list (v! -0.5 -0.36 0) (v! 0 0 1 1)))
-;;                          :element-type 'pos-col))
-;;         stream (make-buffer-stream arr)))
-;;     (when (and arr stream)
-;;       (map-g #'prog-1 stream))))
-
-;; (let ((running))
-;;   (defun my-proj-run-loop ()
-;;     (setf running t)
-;;     (loop
-;;       :while
-;;       running
-;;       :do
-;;          (continuable
-;;            (step-host)
-;;            (update-repl-link)
-;;            (clear)
-;;            (step-game)
-;;            (swap))))
-
-;;   (defun my-stop-loop ()
-;;     (setf running nil)))
