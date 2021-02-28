@@ -57,3 +57,6 @@
  1 2 3 )
 
 (butlast '(1 2 3))
+
+
+(defvar *foo* 'hi)

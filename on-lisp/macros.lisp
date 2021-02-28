@@ -187,15 +187,86 @@
 
 
 
+
+
+;; never destructivly change &rest parms, they are shared somewhere in the program
+
+;; ,@ is equivalent to append rather than an nconc (so save)
 
 
 
 
+;;  leave alone all list args to macros
 
+(defmacro crazy (expr) (nconc expr (list t)))
 
-
-
-
+(defun foo () (crazy (list)))
 
 
 
+;; recursion
+
+(nth 2 '(0 1 2 3))
+
+(defmacro wrong-nth )
+
+
+;;  this doesn't compile because it recurses infinitej
+(defmacro my-nth (n lst)
+  (let ((n-var (gensym))
+        (list-var (gensym)))
+    `(let ((,n-var ,n))
+       (if (= ,n-var 0)
+           (car ,list-var)
+           (my-nth (- ,n-var 1) (cdr ,list-var))))))
+
+(my-nth 2 '(0 1 2 3))
+
+;; you can use that iterative version
+;; use a combination of macro of func, can use labels
+
+
+(defmacro ora (&reset args)
+  (or-expand (args)))
+
+(defun or-expand (args)
+  (if (null args)
+      nil
+      (let ((sym (gensym)))
+        `(let ((,sym ,(car args)))
+           (if ,sym
+               ,sym
+               ,(or-expand (cdr args)))))))
+
+;; classic macros
+
+;; create context
+
+(defmacro our-let (binds &body body)
+  `((lambda ,(mapcar #'(lambda (x)
+                       (if (consp x) (car x) x))
+              binds)
+      ,@body)
+    ,@(mapcar #'(lambda (x)
+                  (if (consp x) (cadr x) nil))
+              binds)))
+
+
+(mapcar (lambda (x) (if (consp x) (car x) x)) '(1 2))
+
+(defmacro with-gensyms (syms &body body)
+  `(let ,(mapcar #'(lambda (s) `(,s (gensym))) syms)
+     ,@body))
+
+(defmacro foo (&body body)
+  (with-gensyms (ab ba)
+    (print (list ab 'foo))))
+
+(foo )
+
+
+(defun test (&rest args)
+  (print (apply #'+ args)))
+
+(defun hello ()
+  (test 1 2 3))

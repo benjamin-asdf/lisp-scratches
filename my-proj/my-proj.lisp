@@ -11,12 +11,19 @@
 
 ;;  -> pipeline -> fbo
 
+;; make struct with fields
+;; ubo uniform buffer object
+;; (make-ubo )
+
 (defvar *gpu-verts-arr* nil)
 (defvar *gpu-index-arr* nil)
 (defvar *vert-stream* nil)
 (defvar *viewport* nil)
 (defvar *leaf-tex1* nil)
 (defvar *leaf-sampler* nil)
+(defvar *fbo-tex* nil)
+(defvar *fbo* nil)
+(defvar *fbo-tex-sampler* nil)
 (defparameter *running* nil)
 
 (defstruct-g our-vert
@@ -29,8 +36,9 @@
    (our-vert-uv vert)))
 
 (defun-g draw-verts-frag-stage ((uv :vec2)  &uniform (sam :sampler-2d))
-  ;; (v! 1 1 1 0) ||#
-  (texture sam uv))
+  ;; (v! 1 1 1 0)
+  (texture sam (* 2 uv))
+  )
 
 (defpipeline-g draw-verts-pipeline ()
   (draw-verts-vert-stage our-vert)
@@ -47,8 +55,28 @@
                     ;; (sin (get-universal-time)) ||#
                     ;; (sin (get-universal-time)) ||#
                     )
-           :sam *leaf-sampler*)
+           :sam ;; *leaf-sampler*
+           *fbo-tex-sampler*
+
+           )
     (swap)))
+
+;; (defun draw ()
+;;   (step-host)
+;;   (update-repl-link)
+
+;;   (progn ;; with-viewport *viewport*
+
+;;     (with-fbo-bound (*fbo*)
+;;       (clear)
+;;       (map-g #'draw-verts-pipeline *vert-stream*
+;;              :offset (v!
+;;                       0 0
+;;                       ;; (sin (get-universal-time)) ||#
+;;                       ;; (sin (get-universal-time)) ||#
+;;                       )
+;;              :sam *leaf-sampler*)
+;;       (swap))))
 
 (defun init ()
   (when *gpu-verts-arr*
@@ -61,13 +89,14 @@
   (setf *viewport*
         (make-viewport '(400 400)))
 
-
   ;; (when *vert-stream* ||#
   ;;   (free *vert-stream* )) ||#
 
   (setf *leaf-tex1*
         (dirt:load-image-to-texture
-         "assets/kenney-foliage/png/flat/sprite_0021.png"))
+         ;; "/home/benj/repos/lisp/scratches/my-proj/assets/kenney-foliage/png/flat/sprite_0021.png"
+         "assets/kenney-foliage/png/flat/sprite_0021.png"
+         ))
 
   (setf *leaf-sampler*
         (sample *leaf-tex1*))
@@ -97,6 +126,17 @@
 (defun stop-loop ()
   (setf *running* nil))
 
+
+;; (with-viewport *viewport* (make-fbo 0))
+;; (setf *fbo* *)
+;;  texture based fbo
+;; (attachment *fbo* 0)
+;; (gpu-array-texture *)
+;; (setf *fbo-tex* *)
+;; (setf *fbo-tex* (gpu-array-texture (attachment *fbo* 0)))
+
+
+
 ;; save model files, lib like cons pack, fast dot or sth
 
 ;; same gl buffer
@@ -107,3 +147,6 @@
 ;;         (cepl.skitter.sdl2:key-down-p
 ;;          14)
 
+
+;; 780 -> 453
+;;
