@@ -5,4 +5,5 @@
     (:use #:cl #:cepl #:rtg-math #:vari
           :cepl.skitter.sdl2
      :livesupport
-          #:nineveh))
+          #:nineveh
+     :temporal-functions))
